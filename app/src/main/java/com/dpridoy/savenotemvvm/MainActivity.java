@@ -1,15 +1,20 @@
 package com.dpridoy.savenotemvvm;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
@@ -49,6 +54,20 @@ public class MainActivity extends AppCompatActivity {
                 adapter.setNotes(notes);
             }
         });
+
+        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0,
+                ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                noteViewModel.delete(adapter.getNoteAt(viewHolder.getAdapterPosition()));
+                Toast.makeText(MainActivity.this,"Note deleted",Toast.LENGTH_SHORT);
+            }
+        }).attachToRecyclerView(recyclerView);
     }
 
     @Override
@@ -67,5 +86,28 @@ public class MainActivity extends AppCompatActivity {
         }else {
             Toast.makeText(this,"Note not saved",Toast.LENGTH_SHORT).show();
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater menuInflater=getMenuInflater();
+        menuInflater.inflate(R.menu.main_menu,menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.delete_all:
+                noteViewModel.deleteAllNotes();
+                Toast.makeText(this,"All notes deleted",Toast.LENGTH_SHORT).show();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+                
+        }
+
+
+
     }
 }
